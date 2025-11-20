@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
+:root {
+  /* TRON Legacy Light Mode (Clean but with Cyan accents) */
+  --background: hsl(180 5% 96%);
+  --foreground: hsl(180 10% 10%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(180 10% 10%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(180 10% 10%);
+  --primary: hsl(180 100% 35%);
+  /* Cyan */
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(180 10% 90%);
+  --secondary-foreground: hsl(180 10% 10%);
+  --muted: hsl(180 10% 90%);
+  --muted-foreground: hsl(180 5% 40%);
+  --accent: hsl(180 100% 35%);
+  --accent-foreground: hsl(0 0% 100%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(180 20% 85%);
+  --input: hsl(180 20% 85%);
+  --ring: hsl(180 100% 35%);
+  --radius: 0.25rem;
+  /* Sharper corners for tech feel */
+  --grid-color: rgba(0, 100, 100, 0.1);
+}
+
+.dark {
+  /* TRON Legacy Dark Mode (Deep Black, Neon Cyan) */
+  --background: hsl(240 10% 3.9%);
+  /* Deep Black/Blue */
+  --foreground: hsl(180 100% 90%);
+  /* Pale Cyan Text */
+  --card: hsl(230 15% 6%);
+  --card-foreground: hsl(180 100% 90%);
+  --popover: hsl(230 15% 6%);
+  --popover-foreground: hsl(180 100% 90%);
+  --primary: hsl(180 100% 50%);
+  /* Neon Cyan */
+  --primary-foreground: hsl(230 20% 10%);
+  --secondary: hsl(230 15% 12%);
+  --secondary-foreground: hsl(180 100% 90%);
+  --muted: hsl(230 15% 12%);
+  --muted-foreground: hsl(180 30% 60%);
+  --accent: hsl(180 100% 50%);
+  --accent-foreground: hsl(230 20% 10%);
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(180 50% 20%);
+  /* Dim Cyan Border */
+  --input: hsl(180 50% 20%);
+  --ring: hsl(180 100% 50%);
+  --grid-color: rgba(0, 255, 255, 0.05);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom Grid Background Utility */
+@layer utilities {
+  .bg-grid-pattern {
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  }
+}
+
+@keyframes border-beam {
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+.animate-border-beam {
+  animation: border-beam calc(var(--duration) * 1s) infinite linear;
+}
+
+/* Custom Scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.2);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.3);
+}
