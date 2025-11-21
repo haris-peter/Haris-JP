@@ -22,14 +22,14 @@ export async function POST(request: NextRequest) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Upload to Cloudinary
+        // Upload to Cloudinary as raw file
         const result = await new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 {
                     folder: 'resumes',
                     resource_type: 'raw',
                     public_id: title || file.name.replace(/\.[^/.]+$/, ''),
-                    format: 'pdf',
+                    type: 'upload',
                 },
                 (error, result) => {
                     if (error) reject(error);
@@ -40,10 +40,23 @@ export async function POST(request: NextRequest) {
             uploadStream.end(buffer);
         });
 
+        const uploadResult = result as any;
+
+        // Create a direct download URL with proper headers
+        const downloadUrl = cloudinary.url(uploadResult.public_id, {
+            resource_type: 'raw',
+            type: 'upload',
+            flags: 'attachment',
+        });
+
+        // Create a view URL (for inline viewing)
+        const viewUrl = uploadResult.secure_url;
+
         return NextResponse.json({
             success: true,
-            url: (result as any).secure_url,
-            publicId: (result as any).public_id,
+            url: viewUrl,
+            downloadUrl: downloadUrl,
+            publicId: uploadResult.public_id,
         });
     } catch (error) {
         console.error('Upload error:', error);

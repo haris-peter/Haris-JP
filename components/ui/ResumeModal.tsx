@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Download, FileText } from "lucide-react";
+import { X, Download, FileText, Loader2 } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
-const roles = [
-    { id: "devops", label: "DevOps Engineer", file: "/resumes/devops.pdf" },
-    { id: "ai-ml", label: "AI/ML Engineer", file: "/resumes/ai-ml.pdf" },
-    { id: "software", label: "Software Engineer", file: "/resumes/software.pdf" },
-    { id: "backend", label: "Backend Developer", file: "/resumes/backend.pdf" },
+const defaultRoles = [
+    { id: "devops", label: "DevOps Engineer" },
+    { id: "ai-ml", label: "AI/ML Engineer" },
+    { id: "software", label: "Software Engineer" },
+    { id: "backend", label: "Backend Developer" },
 ];
 
 interface ResumeModalProps {
@@ -16,22 +18,92 @@ interface ResumeModalProps {
     onClose: () => void;
 }
 
+interface ResumeData {
+    url: string;
+    publicId: string;
+    uploadedAt: Date;
+}
+
 export function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
     const [selectedRole, setSelectedRole] = useState<string>("");
+    const [resumes, setResumes] = useState<Record<string, ResumeData>>({});
+    const [customRoles, setCustomRoles] = useState<Array<{ id: string; label: string }>>([]);
+    const [loading, setLoading] = useState(true);
+    const [downloading, setDownloading] = useState(false);
 
-    const handleDownload = () => {
-        const role = roles.find(r => r.id === selectedRole);
-        if (role) {
-            // Create a temporary link and trigger download
-            const link = document.createElement('a');
-            link.href = role.file;
-            link.download = `${role.label.replace(/\s+/g, '_')}_Resume.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            onClose();
+    const allRoles = [...defaultRoles, ...customRoles];
+
+    useEffect(() => {
+        if (isOpen) {
+            loadResumes();
+            loadCustomRoles();
+        }
+    }, [isOpen]);
+
+    const loadCustomRoles = async () => {
+        try {
+            const docRef = doc(db, "settings", "resume_roles");
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.roles && Array.isArray(data.roles)) {
+                    setCustomRoles(data.roles);
+                }
+            }
+        } catch (error) {
+            console.error("Error loading custom roles:", error);
         }
     };
+
+    const loadResumes = async () => {
+        try {
+            const docRef = doc(db, "settings", "resumes");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                setResumes(docSnap.data() as Record<string, ResumeData>);
+            }
+        } catch (error) {
+            console.error("Error loading resumes:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDownload = async () => {
+        const role = allRoles.find(r => r.id === selectedRole);
+        const resume = resumes[selectedRole];
+
+        if (role && resume) {
+            setDownloading(true);
+            try {
+                const fileName = `${role.label.replace(/\s+/g, '_')}_Resume.pdf`;
+
+                // Fetch the file
+                const response = await fetch(resume.url);
+                const blob = await response.blob();
+
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                onClose();
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Failed to download resume. Please try again.');
+            } finally {
+                setDownloading(false);
+            }
+        }
+    };
+
+    const availableRoles = allRoles.filter(role => resumes[role.id]);
 
     return (
         <AnimatePresence>
@@ -70,29 +142,50 @@ export function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
                             // CHOOSE_YOUR_PREFERRED_RESUME_VERSION
                         </p>
 
-                        <div className="space-y-3 mb-6">
-                            {roles.map((role) => (
-                                <button
-                                    key={role.id}
-                                    onClick={() => setSelectedRole(role.id)}
-                                    className={`w-full p-4 rounded-lg border-2 transition-all text-left font-medium ${selectedRole === role.id
-                                            ? "border-primary bg-primary/10 text-primary shadow-[0_0_20px_rgba(0,255,255,0.3)]"
-                                            : "border-border hover:border-primary/50 text-foreground"
-                                        }`}
-                                >
-                                    {role.label}
-                                </button>
-                            ))}
-                        </div>
+                        {loading ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                            </div>
+                        ) : availableRoles.length === 0 ? (
+                            <div className="text-center py-8">
+                                <p className="text-muted-foreground">No resumes available yet.</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="space-y-3 mb-6">
+                                    {availableRoles.map((role) => (
+                                        <button
+                                            key={role.id}
+                                            onClick={() => setSelectedRole(role.id)}
+                                            className={`w-full p-4 rounded-lg border-2 transition-all text-left font-medium ${selectedRole === role.id
+                                                ? "border-primary bg-primary/10 text-primary shadow-[0_0_20px_rgba(0,255,255,0.3)]"
+                                                : "border-border hover:border-primary/50 text-foreground"
+                                                }`}
+                                        >
+                                            {role.label}
+                                        </button>
+                                    ))}
+                                </div>
 
-                        <button
-                            onClick={handleDownload}
-                            disabled={!selectedRole}
-                            className="w-full py-3 px-4 bg-primary text-black font-bold rounded-lg hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 tracking-widest"
-                        >
-                            <Download className="w-4 h-4" />
-                            DOWNLOAD_RESUME
-                        </button>
+                                <button
+                                    onClick={handleDownload}
+                                    disabled={!selectedRole || downloading}
+                                    className="w-full py-3 px-4 bg-primary text-black font-bold rounded-lg hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 tracking-widest"
+                                >
+                                    {downloading ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            DOWNLOADING...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Download className="w-4 h-4" />
+                                            DOWNLOAD_RESUME
+                                        </>
+                                    )}
+                                </button>
+                            </>
+                        )}
                     </motion.div>
                 </motion.div>
             )}
