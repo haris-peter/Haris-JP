@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Send, Loader2, CheckCircle2 } from "lucide-react";
+import { Send, Loader2, CheckCircle2, Github, Linkedin, Mail, MessageSquare } from "lucide-react";
 import { BorderBeam } from "@/components/ui/BorderBeam";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export function Contact() {
     const [formData, setFormData] = useState({
@@ -13,6 +15,27 @@ export function Contact() {
     });
     const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
     const [errorMessage, setErrorMessage] = useState("");
+    const [socialLinks, setSocialLinks] = useState({
+        github: "",
+        linkedin: "",
+        discord: "",
+        email: "",
+    });
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const docRef = doc(db, "settings", "site");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setSocialLinks(docSnap.data() as any);
+                }
+            } catch (error) {
+                console.error("Error fetching social links:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -142,6 +165,53 @@ export function Contact() {
                                 )}
                             </button>
                         </form>
+                    )}
+                </motion.div>
+
+                {/* Social Links */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                    className="mt-12 flex flex-wrap justify-center gap-6"
+                >
+                    {socialLinks.github && (
+                        <a
+                            href={socialLinks.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-6 py-3 bg-card/50 border border-primary/20 rounded-full text-muted-foreground hover:text-primary hover:border-primary/50 transition-all group"
+                        >
+                            <Github className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span className="font-mono text-sm">GITHUB</span>
+                        </a>
+                    )}
+                    {socialLinks.linkedin && (
+                        <a
+                            href={socialLinks.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-6 py-3 bg-card/50 border border-primary/20 rounded-full text-muted-foreground hover:text-primary hover:border-primary/50 transition-all group"
+                        >
+                            <Linkedin className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span className="font-mono text-sm">LINKEDIN</span>
+                        </a>
+                    )}
+                    {socialLinks.discord && (
+                        <div className="flex items-center gap-2 px-6 py-3 bg-card/50 border border-primary/20 rounded-full text-muted-foreground hover:text-primary hover:border-primary/50 transition-all group cursor-default">
+                            <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span className="font-mono text-sm">{socialLinks.discord}</span>
+                        </div>
+                    )}
+                    {socialLinks.email && (
+                        <a
+                            href={`mailto:${socialLinks.email}`}
+                            className="flex items-center gap-2 px-6 py-3 bg-card/50 border border-primary/20 rounded-full text-muted-foreground hover:text-primary hover:border-primary/50 transition-all group"
+                        >
+                            <Mail className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span className="font-mono text-sm">EMAIL</span>
+                        </a>
                     )}
                 </motion.div>
             </div>

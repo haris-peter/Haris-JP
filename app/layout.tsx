@@ -1,3 +1,5 @@
+
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -5,6 +7,8 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { AnalyticsTracker } from "@/components/providers/AnalyticsTracker";
+import { LightCycle } from "@/components/ui/LightCycle";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,8 +16,6 @@ export const metadata: Metadata = {
   title: "My Portfolio",
   description: "Professional Portfolio",
 };
-
-import { LightCycle } from "@/components/ui/LightCycle";
 
 export default function RootLayout({
   children,
@@ -30,6 +32,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
+            <AnalyticsTracker />
             <SmoothScroll>
               <LightCycle />
               {children}

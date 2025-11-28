@@ -30,12 +30,12 @@ export default function EditProject() {
                     } as Project);
                 } else {
                     alert("Project not found");
-                    router.push("/admin/projects");
+                    router.push("/protocol/projects");
                 }
             } catch (error) {
                 console.error("Error fetching project:", error);
                 alert("Failed to load project");
-                router.push("/admin/projects");
+                router.push("/protocol/projects");
             } finally {
                 setLoading(false);
             }
@@ -53,7 +53,7 @@ export default function EditProject() {
             });
 
             alert("✅ Project updated successfully!");
-            router.push("/admin/projects");
+            router.push("/protocol/projects");
         } catch (error) {
             console.error("Error updating project:", error);
             alert("❌ Failed to update project");
@@ -61,7 +61,7 @@ export default function EditProject() {
     };
 
     const handleCancel = () => {
-        router.push("/admin/projects");
+        router.push("/protocol/projects");
     };
 
     if (loading) {

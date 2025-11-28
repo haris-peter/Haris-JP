@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { Image as ImageIcon, Loader2 } from "lucide-react";
 
 interface BlogEditorProps {
     initialData?: {
@@ -21,6 +22,7 @@ export function BlogEditor({ initialData, onSave }: BlogEditorProps) {
     const [content, setContent] = useState("");
     const [excerpt, setExcerpt] = useState("");
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const router = useRouter();
 
     // Load initial data if editing
@@ -32,6 +34,39 @@ export function BlogEditor({ initialData, onSave }: BlogEditorProps) {
             setExcerpt(initialData.excerpt || "");
         }
     }, [initialData]);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error("Upload failed");
+            }
+
+            const data = await response.json();
+
+            // Insert markdown image at cursor or end
+            const imageMarkdown = `\n![${file.name}](${data.url})\n`;
+            setContent(prev => prev + imageMarkdown);
+
+            alert("✅ Image uploaded and added to content!");
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            alert("❌ Failed to upload image");
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handlePublish = async () => {
         if (!title || !slug || !content) {
@@ -113,7 +148,26 @@ export function BlogEditor({ initialData, onSave }: BlogEditorProps) {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium mb-2">Content * (Markdown)</label>
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium">Content * (Markdown)</label>
+                        <div className="relative">
+                            <input
+                                type="file"
+                                id="image-upload"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                                disabled={uploading}
+                            />
+                            <label
+                                htmlFor="image-upload"
+                                className="flex items-center gap-2 px-3 py-1 bg-muted border border-border rounded cursor-pointer hover:bg-muted/80 text-xs font-mono"
+                            >
+                                {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ImageIcon className="w-3 h-3" />}
+                                {uploading ? "UPLOADING..." : "INSERT_IMAGE"}
+                            </label>
+                        </div>
+                    </div>
                     <textarea
                         placeholder="Write your story in Markdown..."
                         value={content}

@@ -69,7 +69,7 @@ export default function AdminBlog() {
                             </div>
                             <div className="flex gap-2">
                                 <Link
-                                    href={`/admin/blog/${post.id}`}
+                                    href={`/protocol/blog/${post.id}`}
                                     className="p-2 bg-muted border border-border rounded-md hover:bg-muted/80 transition-colors"
                                 >
                                     <Pencil className="w-4 h-4" />

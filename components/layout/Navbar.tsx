@@ -6,12 +6,30 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { ResumeModal } from "@/components/ui/ResumeModal";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Github } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [isResumeOpen, setIsResumeOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [githubLink, setGithubLink] = useState("");
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const docRef = doc(db, "settings", "site");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().github) {
+                    setGithubLink(docSnap.data().github);
+                }
+            } catch (error) {
+                console.error("Error fetching settings:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -62,6 +80,16 @@ export function Navbar() {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        {githubLink && (
+                            <a
+                                href={githubLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hidden md:block text-muted-foreground hover:text-primary transition-colors"
+                            >
+                                <Github className="w-5 h-5" />
+                            </a>
+                        )}
                         <ThemeToggle />
                         <button
                             onClick={() => setIsResumeOpen(true)}

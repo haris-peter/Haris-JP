@@ -12,16 +12,31 @@ interface ProjectEditorProps {
 
 export function ProjectEditor({ initialData, onSave, onCancel }: ProjectEditorProps) {
     const [formData, setFormData] = useState<ProjectFormData>({
-        title: "",
-        description: "",
-        summary: "",
-        techStack: [],
-        link: "",
-        github: "",
-        image: "",
-        featured: true,
-        ...initialData,
+        title: initialData?.title || "",
+        description: initialData?.description || "",
+        summary: initialData?.summary || "",
+        techStack: initialData?.techStack || [],
+        link: initialData?.link || "",
+        github: initialData?.github || "",
+        image: initialData?.image || "",
+        featured: initialData?.featured ?? true,
     });
+
+    // Update form data when initialData changes
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                title: initialData.title || "",
+                description: initialData.description || "",
+                summary: initialData.summary || "",
+                techStack: initialData.techStack || [],
+                link: initialData.link || "",
+                github: initialData.github || "",
+                image: initialData.image || "",
+                featured: initialData.featured ?? true,
+            });
+        }
+    }, [initialData]);
 
     const [techInput, setTechInput] = useState("");
     const [saving, setSaving] = useState(false);

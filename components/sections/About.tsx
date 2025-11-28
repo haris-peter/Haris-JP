@@ -1,8 +1,30 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export function About() {
+    const [bio, setBio] = useState("I am a creative technologist with a passion for building immersive digital experiences. My code is my craft, and the browser is my canvas. I specialize in bridging the gap between robust backend architecture and fluid frontend design.");
+    const [skills, setSkills] = useState(["Next.js / React", "TypeScript", "Firebase / Cloud", "Tailwind CSS", "Node.js", "AI Integration"]);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const docRef = doc(db, "settings", "profile");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.bio) setBio(data.bio);
+                    if (data.skills) setSkills(data.skills);
+                }
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+            }
+        };
+        fetchProfile();
+    }, []);
     return (
         <section id="about" className="py-24 relative bg-background overflow-hidden">
             <div className="container mx-auto px-4">
@@ -22,15 +44,13 @@ export function About() {
                                 <span className="text-primary">&gt;</span> INITIALIZING BIO_SCAN...
                             </p>
                             <p>
-                                I am a creative technologist with a passion for building immersive digital experiences.
-                                My code is my craft, and the browser is my canvas. I specialize in bridging the gap
-                                between robust backend architecture and fluid frontend design.
+                                {bio}
                             </p>
                             <p>
                                 <span className="text-primary">&gt;</span> SKILL_SET_DETECTED:
                             </p>
                             <ul className="grid grid-cols-2 gap-2 pl-4">
-                                {["Next.js / React", "TypeScript", "Firebase / Cloud", "Tailwind CSS", "Node.js", "AI Integration"].map((skill) => (
+                                {skills.map((skill) => (
                                     <li key={skill} className="flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_5px_rgba(0,255,255,0.8)]" />
                                         {skill}

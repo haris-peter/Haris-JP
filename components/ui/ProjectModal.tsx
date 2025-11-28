@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ExternalLink, Github, Code2 } from "lucide-react";
 import { Project } from "@/types/project";
+import { useSmoothScroll } from "@/components/providers/SmoothScroll";
 
 interface ProjectModalProps {
     project: Project | null;
@@ -12,6 +13,22 @@ interface ProjectModalProps {
 }
 
 export function ProjectModal({ project, isOpen, onClose }: ProjectModalProps) {
+    const { lenis } = useSmoothScroll();
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            lenis?.stop();
+        } else {
+            document.body.style.overflow = 'unset';
+            lenis?.start();
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+            lenis?.start();
+        };
+    }, [isOpen, lenis]);
+
     if (!project) return null;
 
     return (

@@ -53,6 +53,7 @@ export default function AdminLayout({
         { href: "/protocol/comments", label: "MANAGE_COMMENTS" },
         { href: "/protocol/resumes", label: "MANAGE_RESUMES" },
         { href: "/protocol/settings", label: "SETTINGS" },
+        { href: "/protocol/analytics", label: "ANALYTICS" },
     ];
 
     return (

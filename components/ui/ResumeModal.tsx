@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, FileText, Loader2 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { trackResumeDownload } from "@/lib/analytics";
 
 const defaultRoles = [
     { id: "devops", label: "DevOps Engineer" },
@@ -77,6 +78,9 @@ export function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
         if (role && resume) {
             setDownloading(true);
             try {
+                // Track download
+                trackResumeDownload(role.id);
+
                 const fileName = `${role.label.replace(/\s+/g, '_')}_Resume.pdf`;
 
                 // Fetch the file

@@ -27,12 +27,12 @@ export default function EditBlogPost() {
                     });
                 } else {
                     alert("Post not found");
-                    router.push("/admin/blog");
+                    router.push("/protocol/blog");
                 }
             } catch (error) {
                 console.error("Error fetching post:", error);
                 alert("Failed to load post");
-                router.push("/admin/blog");
+                router.push("/protocol/blog");
             } finally {
                 setLoading(false);
             }
@@ -50,7 +50,7 @@ export default function EditBlogPost() {
             });
 
             alert("✅ Post updated successfully!");
-            router.push("/admin/blog");
+            router.push("/protocol/blog");
         } catch (error) {
             console.error("Error updating post:", error);
             alert("❌ Failed to update post");

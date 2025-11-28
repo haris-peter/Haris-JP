@@ -1,9 +1,11 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { MazeGrid } from "@/components/ui/MazeGrid";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export function Hero() {
     const ref = useRef<HTMLDivElement>(null);
@@ -11,6 +13,23 @@ export function Hero() {
         target: ref,
         offset: ["start start", "end start"],
     });
+
+    const [tagline, setTagline] = useState("Full Stack Developer. System Architect. Digital Frontier Explorer.");
+
+    useEffect(() => {
+        const fetchTagline = async () => {
+            try {
+                const docRef = doc(db, "settings", "profile");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().tagline) {
+                    setTagline(docSnap.data().tagline);
+                }
+            } catch (error) {
+                console.error("Error fetching tagline:", error);
+            }
+        };
+        fetchTagline();
+    }, []);
 
     const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
     const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
@@ -54,7 +73,7 @@ export function Hero() {
                     transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                     className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-mono"
                 >
-                    Full Stack Developer. System Architect. Digital Frontier Explorer.
+                    {tagline}
                 </motion.p>
 
                 <motion.div
